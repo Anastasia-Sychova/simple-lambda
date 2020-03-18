@@ -3,14 +3,15 @@
     <xsd:element name="Magazine" type="magazine"/>
     <xsd:complexType name="magazine">
         <xsd:all>
-            <xsd:element name="title" type="nameType"/>
-            <xsd:element name="name" type="nameType"/>
-            <xsd:element name="publisher" type="nameType"/>
-            <xsd:element name="publication_number" type="xsd:integer"/>
-            <xsd:element name="publication_date" type="xsd:string"/>
-            <xsd:element name="country" type="alpha2"/>
-            <xsd:element name="language" type="xsd:string"/>
-            <xsd:element name="genres" minOccurs="1">
+            <xsd:element name="Title" type="nameType"/>
+            <xsd:element name="Name" type="nameType"/>
+            <xsd:element name="Publisher" type="nameType"/>
+            <xsd:element name="PublicationCode" type="nameType"/>
+            <xsd:element name="PublicationNumber" type="xsd:integer"/>
+            <xsd:element name="PublicationDate" type="xsd:string"/>
+            <xsd:element name="Country" type="alpha2"/>
+            <xsd:element name="Language" type="xsd:string"/>
+            <xsd:element name="Genre" minOccurs="1">
                 <xsd:simpleType>
                     <xsd:restriction base="xsd:string">
                         <xsd:enumeration value="teen"/>
@@ -28,7 +29,7 @@
                     </xsd:restriction>
                 </xsd:simpleType>
             </xsd:element>
-            <xsd:element name="is_test" type="xsd:boolean"/>
+            <xsd:element name="IsTest" type="xsd:boolean"/>
         </xsd:all>
     </xsd:complexType>
     <xsd:simpleType name="nameType">

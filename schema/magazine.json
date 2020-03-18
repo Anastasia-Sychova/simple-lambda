@@ -21,6 +21,11 @@
             "minLength": 1,
             "maxLength": 256
           },
+          "publication_code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
           "publication_number": {
             "type": "integer",
             "minimum": 1
@@ -67,6 +72,7 @@
           "title",
           "name",
           "publisher",
+          "publication_code",
           "publication_number",
           "publication_date",
           "country",
