@@ -26,7 +26,8 @@ exports.handler = (event) => {
         if (!v.validate(event, structure).valid) {
             reject(JSON.stringify({
                 statusCode: 400,
-                body: '[BadRequest] Validation errors:\n{errors}'.formatUnicorn({errors: v.validate(event, structure).toString()})
+                body: '[BadRequest] Validation errors:\n{errors}'.formatUnicorn(
+                    {errors: v.validate(event, structure).toString()})
             }));
         }
 
@@ -47,11 +48,12 @@ exports.handler = (event) => {
         connection.connect();
 
         prepareDbMagazinesData(connection, event.body).then((result) => {
-            if (result.magazinesData.length !== 0) {
+            if (result.length !== 0) {
                 let query = "INSERT INTO `Magazines`" +
-                    "(`title`, `name`, `publisher`, `publication_number`, `publication_date``, `country`, `language`, `genres`, `is_test`) " +
+                    "(`title`, `name`, `publisher`, `publication_code`, `publication_number`," +
+                    "`publication_date``, `country`, `language`, `genres`, `is_test`) " +
                     "VALUES " +
-                    result.magazinesData.join(', ');
+                    result.join(', ');
                 console.log(query);
                 connection.query(query, function (err, results, fields) {
                     if (err) {
@@ -60,46 +62,106 @@ exports.handler = (event) => {
                             statusCode: 500,
                             body: 'Internal error'
                         }));
-                        
+
                         return;
                     }
 
                     console.info('Successfully added', results);
-                    resolve({statusCode: 200, body: result.magazinesData});
+                    resolve({statusCode: 200, body: result});
                 });
             } else {
-                resolve({statusCode: 200, body: result.magazinesData});
+                resolve({statusCode: 200, body: result});
             }
         });
     });
 };
 
-function getXmlMagazines(xmlStr)
-{
-    let xmlDoc = libxmljs.parseXml(xmlStr);
-    let xmlSchema = libxmljs.parseXml(xmlStructure);
-    let result = xmlDoc.validate(xmlSchema);
-    if (!result) {
+function getXmlMagazines(xmlStr) {
+    let result = '';
+    let magazines = [];
+    try {
+        let xmlDoc = libxmljs.parseXml(xmlStr);
+        let xmlSchema = libxmljs.parseXml(xmlStructure);
+        result = xmlDoc.validate(xmlSchema);
+        if (!result) {
+            return false;
+        }
+        let record = xmlDoc.get('//Magazine');
+        let magazine = {
+            'title'              : record.get('Title').text(),
+            'name'               : record.get('Name').text(),
+            'publisher'          : record.get('Publisher').text(),
+            'publication_code'   : record.get('PublicationCode').text(),
+            'publication_number' : parseInt(record.get('PublicationNumber').text()),
+            'publication_date'   : record.get('PublicationDate').text(),
+            'country'            : record.get('Country').text(),
+            'language'           : record.get('Language').text(),
+            'genres'             : [record.get('Genre').text()],
+            'isTest'             : 'true' === record.get('IsTest').text(),
+        };
+        magazines.push(magazine);
+    } catch (e) {
+        console.log(e);
+
         return false;
     }
-    let record = xmlDoc.get('//Magazine');
-    let magazines = [];
-    let magazine = {
-        'title'              : record.get('title').text(),
-        'name'               : [record.get('name').text()],
-        'publisher'          : [record.get('publisher').text()],
-        'publication_number' : record.get('publication_number').text(),
-        'publication_date'   : [record.get('publication_date').text()],
-        'country'            : [record.get('country').text()],
-        'language'           : [record.get('language').text()],
-        'genres'             : [record.get('genres').text()],
-        'isTest'             : 'true' === record.get('isTest').text(),
-    };
-    magazines.push(magazine);
 
     return magazines;
 }
 
-function prepareDbMagazinesData (connection, baseUrl, trips, apiKey) {
+function prepareDbMagazinesData(connection, magazines) {
+    let magazinesData = [];
+    let checkedCount = 0;
+    return new Promise (async function(resolve, reject) {
+        magazines.forEach(function (magazineElement) {
+            isMagazineExists(connection, magazineElement.publication_code).then((isAdded) => {
+                console.log('Is magazine exists:', isAdded, magazineElement.publication_code);
+                if (!isAdded) {
+                    magazinesData.push(("({title}, {name}, {publisher}, {publicationCode}, {publicationNumber}, " +
+                        "{publicationDate}', {country}, {language}, {genres}, {isTest}" +
+                        "").formatUnicorn({
+                        title            : mysql.escape(magazineElement.title),
+                        name             : mysql.escape(magazineElement.name),
+                        publisher        : mysql.escape(magazineElement.publisher),
+                        publicationCode  : mysql.escape(magazineElement.publicationCode),
+                        publicationNumber: mysql.escape(magazineElement.publicationNumber),
+                        publicationDate  : mysql.escape(magazineElement.publicationDate),
+                        country          : mysql.escape(magazineElement.country),
+                        language         : mysql.escape(magazineElement.language),
+                        genres           : JSON.stringify(magazineElement.genres),
+                        isTest           : (undefined === magazineElement.isTest) ?
+                            0 : mysql.escape(magazineElement.isTest),
+                    }));
+                }
+                checkedCount++;
+            });
+        });
+        let magazinesInterval = setInterval(function () {
+            if (checkedCount === magazines.length) {
+                clearInterval(magazinesInterval);
 
-}
+                    resolve(magazinesData);
+                }
+            });
+    }).then(function(magazinesData){
+        return magazinesData;
+    });
+};
+
+function isMagazineExists (connection, publicationCode) {
+    return new Promise (function(resolve, reject) {
+        let query = "SELECT COUNT(*) AS magazinesCount FROM `magazines` WHERE publication_code={code}".formatUnicorn({
+            code: mysql.escape(publicationCode),
+        });
+        connection.query(query, function (err, results, fields) {
+            if (err) {
+                console.error('Query error:', err);
+                resolve(false);
+            }
+
+            resolve(results[0].magazinesCount > 0);
+        });
+    }).then(function(result){
+        return result;
+    });
+};

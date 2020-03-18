@@ -1,0 +1,61 @@
+image: node:10.16
+
+variables:
+  S3_BUCKET: ${S3_BUCKET}
+  LAMBDA_RUNTIME: 'nodejs10.x'
+  LAMBDA_NAME: ${INBOUND_LAMBDA_NAME}
+  LAMBDA_ARN: ${INBOUND_LAMBDA_ARN}
+  LAMBDA_ROLE: ${INBOUND_LAMBDA_ROLE}
+  LAMBDA_HANDLER: 'index.handler'
+
+before_script:
+- sed -i '/jessie-updates/d' /etc/apt/sources.list
+- apt-get -y update
+- python -V
+- apt install -y zip jq
+- curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+- python get-pip.py
+- apt-get install -y python-dev
+- pip install awscli --upgrade --user
+- export PATH=~/.local/bin:$PATH
+- aws --version
+- rm get-pip.py
+
+stages:
+- build
+- deploy
+
+build:
+  stage: build
+
+  only:
+  - master
+
+  script:
+  - npm install --no-progress
+  - zip -r simple-lambda.zip . -x *.git* "/migrations/*" # Archive the code repository.
+
+  environment:
+    name: master
+
+  cache:
+    paths:
+    - ./node_modules
+
+  artifacts:
+    paths:
+    - ./simple-lambda.zip
+    expire_in: 1 day
+
+deploy:
+  stage: deploy
+
+  only:
+  - master
+
+  environment:
+    name: master
+
+  script:
+  - aws s3 cp simple-lambda.zip s3://$S3_BUCKET/simple-lambda.zip # Upload archive into s3.
+  - aws lambda update-function-code --function-name $LAMBDA_NAME --zip-file fileb://simple-lambda.zip|| aws lambda create-function --function-name $LAMBDA_NAME --runtime $LAMBDA_RUNTIME --role $LAMBDA_ROLE --handler $LAMBDA_HANDLER --code S3Bucket=$S3_BUCKET,S3Key=simple-lambda.zip --memory-size 128
