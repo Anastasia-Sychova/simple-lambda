@@ -1,0 +1,24 @@
+{
+  "name": "simple-lambda",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Anastasia-Sychova/simple-lambda.git"
+  },
+  "author": "Anastasia Sychova",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Anastasia-Sychova/simple-lambda/issues"
+  },
+  "homepage": "https://github.com/Anastasia-Sychova/simple-lambda#readme",
+  "dependencies": {
+    "format-unicorn": "^1.1.1",
+    "libxmljs": "^0.19.7",
+    "mysql2": "^2.1.0"
+  }
+}

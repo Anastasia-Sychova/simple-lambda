@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+    <xsd:element name="Magazine" type="magazine"/>
+    <xsd:complexType name="magazine">
+        <xsd:all>
+            <xsd:element name="title" type="nameType"/>
+            <xsd:element name="name" type="nameType"/>
+            <xsd:element name="publisher" type="nameType"/>
+            <xsd:element name="publication_number" type="xsd:integer"/>
+            <xsd:element name="publication_date" type="xsd:string"/>
+            <xsd:element name="country" type="alpha2"/>
+            <xsd:element name="language" type="xsd:string"/>
+            <xsd:element name="genres" minOccurs="1">
+                <xsd:simpleType>
+                    <xsd:restriction base="xsd:string">
+                        <xsd:enumeration value="teen"/>
+                        <xsd:enumeration value="women"/>
+                        <xsd:enumeration value="men"/>
+                        <xsd:enumeration value="music"/>
+                        <xsd:enumeration value="sports"/>
+                        <xsd:enumeration value="film"/>
+                        <xsd:enumeration value="gossip"/>
+                        <xsd:enumeration value="tv listing"/>
+                        <xsd:enumeration value="beauty"/>
+                        <xsd:enumeration value="hobbies"/>
+                        <xsd:enumeration value="animals"/>
+                        <xsd:enumeration value="health"/>
+                    </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:element>
+            <xsd:element name="is_test" type="xsd:boolean"/>
+        </xsd:all>
+    </xsd:complexType>
+    <xsd:simpleType name="nameType">
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="256" />
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="alpha2">
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="[A-Z]{2}"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+</xsd:schema>

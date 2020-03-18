@@ -1,0 +1,88 @@
+{
+  "type": "object",
+  "properties": {
+    "body": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "publisher": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "publication_number": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "publication_date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "country": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "language": {
+            "type": "string",
+            "pattern": "^[a-z]{2}(-[a-z]{2})?$"
+          },
+          "genres": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "teen",
+                "women",
+                "men",
+                "music",
+                "sports",
+                "film",
+                "gossip",
+                "tv listing",
+                "beauty",
+                "hobbies",
+                "animals",
+                "health"
+              ]
+            },
+            "uniqueItems": "true",
+            "minItems": 0
+          },
+          "isTest": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "title",
+          "name",
+          "publisher",
+          "publication_number",
+          "publication_date",
+          "country",
+          "language",
+          "genres"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "body"
+  ],
+  "additionalProperties": false
+}
